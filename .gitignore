@@ -1,0 +1,53 @@
+# Dependências
+node_modules
+.pnpm-store/
+
+# Build
+dist
+build
+out
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Arquivos de ambiente
+.env
+.env.*
+!.env.example
+
+# Cache
+.npm
+.eslintcache
+.node_repl_history
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+*.swp
+
+# Coverage
+coverage/
+.nyc_output/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# TypeORM
+ormconfig.json
+ormconfig.js
+
+# Temporários
+tmp/
+temp/
