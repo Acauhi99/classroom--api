@@ -80,14 +80,15 @@ Fluxo de requisição:
 ```
 src/
 ├── @domain/               # Lógica de negócio
-│   ├── entities/          # Entidades do domínio
+│   ├── entities/          # Entidades puras do domínio
 │   ├── value-objects/     # Objetos de valor imutáveis
 │   ├── interfaces/        # Interfaces de repositórios, gateways, websocket, etc.
 │   └── services/          # Serviços que implementam a lógica de negócio
 │
 ├── @http/                 # Camada de entrada via HTTP
-│   ├── controllers/       # Controladores Express e Definições de rotas
+│   ├── controllers/       # Controladores Express
 │   ├── middlewares/       # Middlewares HTTP
+│   ├── routes/            # Rotas dos endpoints HTTP
 │   └── dtos/              # DTOs para validação de entrada/saída
 │
 ├── @infrastructure/       # Implementações externas
@@ -98,6 +99,7 @@ src/
 │   ├── logging/           # Configuração de logging
 │   ├── gateways/          # Serviços externos (APIs, etc.)
 │   ├── websocket/         # Configuração de WebSocket
+│   ├── schemas/           # Implementação de schemas de banco de dados (TypeORM)
 │   └── repositories/      # Implementação dos repositórios (TypeORM)
 │
 ├── shared/                # Utilitários compartilhados
