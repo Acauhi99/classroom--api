@@ -2,13 +2,13 @@ import "reflect-metadata";
 import express from "express";
 import cors from "cors";
 import { config } from "dotenv";
-import { AppDataSource } from "./database/data-source.js";
+import { AppDataSource } from "./@infrastructure/database/data-source.js";
 
-// Carrega variáveis de ambiente
+// Load environment variables
 config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // Middlewares
 app.use(express.json());
@@ -18,7 +18,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date(),
-    environment: process.env.NODE_ENV || "development",
+    environment: process.env.NODE_ENV,
   });
 });
 
