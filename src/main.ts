@@ -1,9 +1,13 @@
 import "reflect-metadata";
 import express from "express";
-import cors from "cors";
 import { config } from "dotenv";
 import { AppDataSource } from "./@infrastructure/database/data-source.js";
 import { cacheService } from "./@infrastructure/cache/memcached-service.js";
+import { apiRouter } from "./@http/api.router.js";
+import {
+  setupMiddlewares,
+  setupErrorHandlers,
+} from "./@http/setup.middleware.js";
 
 // Load environment variables
 config();
@@ -11,24 +15,14 @@ config();
 const app = express();
 const PORT = process.env.PORT;
 
-// Middlewares
-app.use(express.json());
-app.use(cors());
+// Configure middlewares
+setupMiddlewares(app);
 
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "ok",
-    timestamp: new Date(),
-    environment: process.env.NODE_ENV,
-  });
-});
+// API routes
+app.use("/api", apiRouter);
 
-app.get("/api/docs", (req, res) => {
-  res.json({
-    message: "API documentation",
-    documentationUrl: "https://example.com/api-docs",
-  });
-});
+// Configure error handlers
+setupErrorHandlers(app);
 
 const startServer = async () => {
   try {
@@ -37,6 +31,10 @@ const startServer = async () => {
 
     await cacheService.set("startup_test", { success: true });
     console.log("🧠 Cache service initialized");
+
+    if (!PORT) {
+      throw new Error("PORT environment variable is not defined");
+    }
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
