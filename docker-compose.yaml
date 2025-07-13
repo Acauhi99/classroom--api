@@ -36,6 +36,24 @@ services:
       com.classroom.description: "PostgreSQL Database for Classroom API"
       com.classroom.service: "database"
 
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: classroom_memcached
+    restart: unless-stopped
+    ports:
+      - "11211:11211"
+    command: memcached -m 128
+    networks:
+      - classroom_network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    labels:
+      com.classroom.description: "Memcached for Classroom API"
+      com.classroom.service: "cache"
+
 networks:
   classroom_network:
     driver: bridge

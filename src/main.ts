@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { config } from "dotenv";
 import { AppDataSource } from "./@infrastructure/database/data-source.js";
+import { cacheService } from "./@infrastructure/cache/memcached-service.js";
 
 // Load environment variables
 config();
@@ -22,10 +23,20 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+app.get("/api/docs", (req, res) => {
+  res.json({
+    message: "API documentation",
+    documentationUrl: "https://example.com/api-docs",
+  });
+});
+
 const startServer = async () => {
   try {
     await AppDataSource.initialize();
     console.log("📦 Database connection established");
+
+    await cacheService.set("startup_test", { success: true });
+    console.log("🧠 Cache service initialized");
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
