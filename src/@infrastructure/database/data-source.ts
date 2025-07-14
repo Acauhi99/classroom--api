@@ -1,5 +1,6 @@
 import { DataSource } from "typeorm";
 import { config } from "dotenv";
+import { User } from "../../@domain/entities/user.entity.js";
 
 config();
 
@@ -12,7 +13,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || "classroom_api",
   synchronize: process.env.NODE_ENV !== "production",
   logging: process.env.NODE_ENV !== "production",
-  entities: ["src/models/**/*.ts"],
+  entities: [User],
   migrations: ["src/database/migrations/**/*.ts"],
   subscribers: ["src/subscribers/**/*.ts"],
 });
