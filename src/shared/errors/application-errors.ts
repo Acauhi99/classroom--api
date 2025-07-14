@@ -44,3 +44,38 @@ export class ForbiddenError extends AppError {
     Object.setPrototypeOf(this, ForbiddenError.prototype);
   }
 }
+
+export class ConfigurationError extends AppError {
+  constructor(message: string) {
+    super(message, 500);
+    Object.setPrototypeOf(this, ConfigurationError.prototype);
+  }
+}
+
+export class DatabaseError extends AppError {
+  constructor(message: string, details?: any[]) {
+    super(message, 500, details);
+    Object.setPrototypeOf(this, DatabaseError.prototype);
+  }
+}
+
+export class DependencyError extends AppError {
+  constructor(message: string) {
+    super(message, 500);
+    Object.setPrototypeOf(this, DependencyError.prototype);
+  }
+}
+
+export class CacheError extends AppError {
+  constructor(message: string) {
+    super(message, 500);
+    Object.setPrototypeOf(this, CacheError.prototype);
+  }
+}
+
+export class BadRequestError extends AppError {
+  constructor(message: string) {
+    super(message, 400);
+    Object.setPrototypeOf(this, BadRequestError.prototype);
+  }
+}

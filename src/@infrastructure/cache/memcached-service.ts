@@ -1,5 +1,6 @@
 import * as memjs from "memjs";
 import { ICacheService } from "../../@domain/interfaces/cache-service.interface.js";
+import { ConfigurationError } from "../../shared/errors/application-errors.js";
 
 class MemcachedService implements ICacheService {
   private client: memjs.Client;
@@ -11,7 +12,9 @@ class MemcachedService implements ICacheService {
     const defaultTTL = process.env.CACHE_TTL;
 
     if (!host || !port || !defaultTTL) {
-      throw new Error("Cache configuration is missing environment variables");
+      throw new ConfigurationError(
+        "Cache configuration is missing environment variables"
+      );
     }
 
     this.defaultTTL = parseInt(defaultTTL, 10);
