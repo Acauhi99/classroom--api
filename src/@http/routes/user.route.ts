@@ -1,35 +1,31 @@
 import { Router } from "express";
 import { validateRequest } from "../middlewares/validate-request.middleware.js";
 import { CreateUserDto, UpdateUserDto } from "../dtos/user.dto.js";
-import { controllers } from "../../shared/container/index.js";
+import { createHandler } from "../utils/controller.util.js";
+import { compose } from "../utils/middleware.util.js";
 
-const userRouter = Router();
+const router = Router();
 
-userRouter.post(
+router.post(
   "/",
-  validateRequest(CreateUserDto),
-  controllers.userController.create.bind(controllers.userController)
+  compose(
+    validateRequest(CreateUserDto),
+    createHandler("userController", "create")
+  )
 );
 
-userRouter.get(
-  "/",
-  controllers.userController.findAll.bind(controllers.userController)
-);
+router.get("/", createHandler("userController", "findAll"));
 
-userRouter.get(
+router.get("/:id", createHandler("userController", "findById"));
+
+router.put(
   "/:id",
-  controllers.userController.findById.bind(controllers.userController)
+  compose(
+    validateRequest(UpdateUserDto),
+    createHandler("userController", "update")
+  )
 );
 
-userRouter.put(
-  "/:id",
-  validateRequest(UpdateUserDto),
-  controllers.userController.update.bind(controllers.userController)
-);
+router.delete("/:id", createHandler("userController", "delete"));
 
-userRouter.delete(
-  "/:id",
-  controllers.userController.delete.bind(controllers.userController)
-);
-
-export { userRouter };
+export const userRoutes = router;

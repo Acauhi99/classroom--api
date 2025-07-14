@@ -8,10 +8,8 @@ export function errorHandlerMiddleware(
   res: Response,
   next: NextFunction
 ): Response {
-  // Log error for debugging
   console.error(`[ERROR] ${error.stack || error.message}`);
 
-  // Handle custom application errors
   if (error instanceof AppError) {
     return res.status(error.statusCode).json({
       status: "error",
@@ -20,15 +18,14 @@ export function errorHandlerMiddleware(
     });
   }
 
-  // Handle TypeORM errors
   if (error.name === "QueryFailedError") {
     return res.status(400).json({
       status: "error",
       message: "Database operation failed",
+      code: "DB_ERROR",
     });
   }
 
-  // Handle class-validator errors array
   if (
     Array.isArray(error) &&
     error.length > 0 &&
@@ -42,13 +39,17 @@ export function errorHandlerMiddleware(
     return res.status(400).json({
       status: "error",
       message: "Validation failed",
+      code: "VALIDATION_ERROR",
       details: validationErrors,
     });
   }
 
-  // Handle unknown errors
   return res.status(500).json({
     status: "error",
-    message: "Internal server error",
+    message:
+      process.env.NODE_ENV === "production"
+        ? "Internal server error"
+        : error.message || "Unknown error occurred",
+    code: "INTERNAL_SERVER_ERROR",
   });
 }

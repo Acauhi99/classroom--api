@@ -4,6 +4,10 @@ import { UserRepository } from "../../@infrastructure/repositories/user.reposito
 import { UserService } from "../../@domain/services/user.service.js";
 import { UserController } from "../../@http/controllers/user.controller.js";
 import { IUserRepository } from "../../@domain/interfaces/user-repository.interface.js";
+import {
+  DependencyError,
+  ConfigurationError,
+} from "../errors/application-errors.js";
 
 const factories = {
   createEntityManager: (): EntityManager => AppDataSource.manager,
@@ -65,13 +69,13 @@ class Container {
 
   public get<T>(key: string): T {
     if (!this.initialized) {
-      throw new Error(
+      throw new ConfigurationError(
         "Container not initialized properly. Database connection may not be ready."
       );
     }
 
     if (!this.dependencies.has(key)) {
-      throw new Error(`Dependency ${key} not found in container`);
+      throw new DependencyError(`Dependency ${key} not found in container`);
     }
     return this.dependencies.get(key) as T;
   }
@@ -86,7 +90,7 @@ class Container {
   }
 
   public isInitialized(): boolean {
-    return this.initialized;
+    return this.initialized && AppDataSource.isInitialized;
   }
 }
 
