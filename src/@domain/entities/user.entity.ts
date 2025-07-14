@@ -1,6 +1,13 @@
 import { ulid } from "ulid";
 import { Email } from "../value-objects/email.value-object.js";
 import { Password } from "../value-objects/password.value-object.js";
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 export enum UserRole {
   STUDENT = "student",
@@ -8,16 +15,52 @@ export enum UserRole {
   ADMIN = "admin",
 }
 
+@Entity("users")
 export class User {
+  @PrimaryColumn("varchar")
   id!: string;
+
+  @Column("varchar")
   name!: string;
+
+  @Column({
+    type: "varchar",
+    unique: true,
+    transformer: {
+      to: (value: Email): string => value.toString(),
+      from: (value: string): Email => new Email(value),
+    },
+  })
   email!: Email;
+
+  @Column({
+    type: "varchar",
+    transformer: {
+      to: (value: Password): string => value.toString(),
+      from: (value: string): Password => Password.fromHashed(value),
+    },
+  })
   password!: Password;
+
+  @Column({
+    type: "enum",
+    enum: UserRole,
+  })
   role!: UserRole;
+
+  @Column("varchar", { nullable: true })
   bio?: string;
+
+  @Column("varchar", { nullable: true })
   avatar?: string;
+
+  @Column("boolean", { default: false })
   isVerified!: boolean;
+
+  @CreateDateColumn()
   createdAt!: Date;
+
+  @UpdateDateColumn()
   updatedAt!: Date;
 
   static create(props: {
@@ -37,8 +80,6 @@ export class User {
     user.bio = props.bio;
     user.avatar = props.avatar;
     user.isVerified = false;
-    user.createdAt = new Date();
-    user.updatedAt = new Date();
     return user;
   }
 
@@ -50,6 +91,5 @@ export class User {
     if (props.bio !== undefined) this.bio = props.bio;
     if (props.avatar !== undefined) this.avatar = props.avatar;
     if (props.isVerified !== undefined) this.isVerified = props.isVerified;
-    this.updatedAt = new Date();
   }
 }

@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { ValidationError } from "../../shared/errors/application-errors.js";
 
 export class Password {
   private readonly value: string;
@@ -11,7 +12,7 @@ export class Password {
 
   static create(password: string): Password {
     if (!this.validate(password)) {
-      throw new Error("Invalid password format");
+      throw new ValidationError("Invalid password format");
     }
     return new Password(password, false);
   }
@@ -21,7 +22,6 @@ export class Password {
   }
 
   private static validate(password: string): boolean {
-    // At least 8 characters, with numbers and letters
     return (
       password.length >= 8 && /\d/.test(password) && /[a-zA-Z]/.test(password)
     );
@@ -38,7 +38,7 @@ export class Password {
 
   async compare(plainPassword: string): Promise<boolean> {
     if (!this.hashed) {
-      throw new Error("Cannot compare with a non-hashed password");
+      throw new ValidationError("Cannot compare with a non-hashed password");
     }
 
     return bcrypt.compare(plainPassword, this.value);

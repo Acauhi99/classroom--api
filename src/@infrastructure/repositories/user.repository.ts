@@ -1,8 +1,6 @@
 import { EntityManager, Repository } from "typeorm";
 import { User } from "../../@domain/entities/user.entity.js";
 import { IUserRepository } from "../../@domain/interfaces/user-repository.interface.js";
-import { Email } from "../../@domain/value-objects/email.value-object.js";
-import { Password } from "../../@domain/value-objects/password.value-object.js";
 
 export class UserRepository implements IUserRepository {
   private repository: Repository<User>;
@@ -12,27 +10,13 @@ export class UserRepository implements IUserRepository {
   }
 
   async findById(id: string): Promise<User | null> {
-    const user = await this.repository.findOneBy({ id });
-
-    if (!user) return null;
-
-    user.email = new Email(user.email.toString());
-    user.password = Password.fromHashed(user.password.toString());
-
-    return user;
+    return this.repository.findOneBy({ id });
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.repository.findOneBy({
+    return this.repository.findOneBy({
       email: email.toLowerCase(),
     });
-
-    if (!user) return null;
-
-    user.email = new Email(user.email.toString());
-    user.password = Password.fromHashed(user.password.toString());
-
-    return user;
   }
 
   async findAll(
@@ -44,31 +28,15 @@ export class UserRepository implements IUserRepository {
       take: limit,
     });
 
-    const processedUsers = users.map((user) => {
-      user.email = new Email(user.email.toString());
-      user.password = Password.fromHashed(user.password.toString());
-      return user;
-    });
-
-    return { users: processedUsers, total };
+    return { users, total };
   }
 
   async create(user: User): Promise<User> {
-    const savedUser = await this.repository.save(user);
-
-    savedUser.email = new Email(savedUser.email.toString());
-    savedUser.password = Password.fromHashed(savedUser.password.toString());
-
-    return savedUser;
+    return this.repository.save(user);
   }
 
   async update(user: User): Promise<User> {
-    const updatedUser = await this.repository.save(user);
-
-    updatedUser.email = new Email(updatedUser.email.toString());
-    updatedUser.password = Password.fromHashed(updatedUser.password.toString());
-
-    return updatedUser;
+    return this.repository.save(user);
   }
 
   async delete(id: string): Promise<void> {
