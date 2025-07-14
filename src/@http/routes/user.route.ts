@@ -1,27 +1,35 @@
 import { Router } from "express";
 import { validateRequest } from "../middlewares/validate-request.middleware.js";
 import { CreateUserDto, UpdateUserDto } from "../dtos/user.dto.js";
-import { container } from "../../shared/container/index.js";
+import { controllers } from "../../shared/container/index.js";
 
 const userRouter = Router();
-const { userController } = container.controllers;
 
 userRouter.post(
   "/",
   validateRequest(CreateUserDto),
-  userController.create.bind(userController)
+  controllers.userController.create.bind(controllers.userController)
 );
 
-userRouter.get("/", userController.findAll.bind(userController));
+userRouter.get(
+  "/",
+  controllers.userController.findAll.bind(controllers.userController)
+);
 
-userRouter.get("/:id", userController.findById.bind(userController));
+userRouter.get(
+  "/:id",
+  controllers.userController.findById.bind(controllers.userController)
+);
 
 userRouter.put(
   "/:id",
   validateRequest(UpdateUserDto),
-  userController.update.bind(userController)
+  controllers.userController.update.bind(controllers.userController)
 );
 
-userRouter.delete("/:id", userController.delete.bind(userController));
+userRouter.delete(
+  "/:id",
+  controllers.userController.delete.bind(controllers.userController)
+);
 
 export { userRouter };

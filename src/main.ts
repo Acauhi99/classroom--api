@@ -8,6 +8,7 @@ import {
   setupMiddlewares,
   setupErrorHandlers,
 } from "./@http/setup.middleware.js";
+import { container } from "./shared/container/index.js";
 
 // Load environment variables
 config();
@@ -28,6 +29,9 @@ const startServer = async () => {
   try {
     await AppDataSource.initialize();
     console.log("📦 Database connection established");
+
+    container.reset();
+    console.log("🧩 Dependency container initialized");
 
     await cacheService.set("startup_test", { success: true });
     console.log("🧠 Cache service initialized");
