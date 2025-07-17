@@ -32,7 +32,7 @@ cd classroom--api
 2. Instale as dependências:
 
 ```bash
-npm install
+pnpm install
 ```
 
 3. Configure as variáveis de ambiente:
@@ -51,16 +51,16 @@ docker compose up -d
 5. Execute as migrações do banco de dados:
 
 ```bash
-npm run migration:run
+pnpm run migration:run
 ```
 
 ## 🏃‍♂️ Scripts disponíveis
 
-- `npm start` - Inicia a aplicação
-- `npm run dev` - Inicia a aplicação em modo desenvolvimento com hot-reload
-- `npm run build` - Compila o TypeScript para JavaScript
-- `npm run lint` - Executa o linter para verificar o código
-- `npm test` - Executa os testes
+- `pnpm start` - Inicia a aplicação
+- `pnpm run dev` - Inicia a aplicação em modo desenvolvimento com hot-reload
+- `pnpm run build` - Compila o TypeScript para JavaScript
+- `pnpm run lint` - Executa o linter para verificar o código
+- `pnpm test` - Executa os testes
 
 ## 🏗️ Arquitetura
 
@@ -71,32 +71,52 @@ A aplicação segue uma arquitetura em camadas:
 ### Estrutura de diretórios
 
 ```
-src/
-├── @domain/               # Lógica de negócio
-│   ├── entities/          # Entidades puras do domínio
-│   ├── value-objects/     # Objetos de valor imutáveis
-│   ├── interfaces/        # Interfaces de repositórios, gateways, websocket, etc.
-│   └── services/          # Serviços que implementam a lógica de negócio
-│
-├── @http/                 # Camada de entrada via HTTP
-│   ├── controllers/       # Controladores Express
-│   ├── middlewares/       # Middlewares HTTP
-│   ├── routes/            # Rotas dos endpoints HTTP
-│   └── dtos/              # DTOs para validação de entrada/saída
-│
-├── @infrastructure/       # Implementações externas
-│   ├── database/          # Configuração de banco de dados (PostgreSQL)
-│   ├── cache/             # Configuração de cache (Memcached)
-│   ├── email/             # Configuração de envio de e-mails
-│   ├── payment/           # Integração com serviços de pagamento
-│   ├── logging/           # Configuração de logging
-│   ├── gateways/          # Serviços externos (APIs, etc.)
-│   ├── websocket/         # Configuração de WebSocket
-│   ├── schemas/           # Implementação de schemas de banco de dados (TypeORM)
-│   └── repositories/      # Implementação dos repositórios (TypeORM)
-│
-├── shared/                # Utilitários compartilhados
-└── main.ts                # Ponto de entrada da aplicação
+├── @domain
+│   ├── entities
+│   │   └── user.entity.ts
+│   ├── interfaces
+│   │   ├── cache-service.interface.ts
+│   │   └── user-repository.interface.ts
+│   ├── services
+│   │   └── user.service.ts
+│   └── value-objects
+│       ├── email.value-object.ts
+│       └── password.value-object.ts
+├── @http
+│   ├── controllers
+│   │   └── user.controller.ts
+│   ├── dtos
+│   │   └── user.dto.ts
+│   ├── middlewares
+│   │   ├── context.middleware.ts
+│   │   ├── error-handler.middleware.ts
+│   │   ├── not-found.middleware.ts
+│   │   └── validate-request.middleware.ts
+│   ├── routes
+│   │   └── user.route.ts
+│   └── utils
+│       ├── controller.util.ts
+│       ├── middleware.util.ts
+│       ├── routes.util.ts
+│       └── setup-middlewares.util.ts
+├── @infrastructure
+│   ├── cache
+│   │   └── memcached-service.ts
+│   ├── database
+│   │   └── data-source.ts
+│   ├── email
+│   ├── gateways
+│   ├── logging
+│   ├── payment
+│   ├── repositories
+│   │   └── user.repository.ts
+│   └── websocket
+├── main.ts
+└── shared
+    ├── container
+    │   └── dependency-container.ts
+    └── errors
+        └── application-errors.ts
 ```
 
 ## 🌟 Funcionalidades
