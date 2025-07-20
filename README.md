@@ -119,6 +119,39 @@ A aplicação segue uma arquitetura em camadas:
         └── application-errors.ts
 ```
 
+## 🧩 Padrões Arquiteturais e de Design
+
+### Arquitetura em Camadas
+
+A aplicação segue princípios de **Clean Architecture** com separação clara entre:
+
+- **Camada de Domínio** (`@domain`): Contém a lógica de negócios, entidades e regras
+- **Camada de Aplicação** (`@http`): Controllers, DTOs e rotas que orquestram os casos de uso
+- **Camada de Infraestrutura** (`@infrastructure`): Implementações concretas e integrações externas
+
+### Padrões de Design Implementados
+
+- **Dependency Injection**: Utilizando container para gerenciamento e inversão de dependências
+- **Repository Pattern**: Abstraindo o acesso a dados com interfaces definidas na camada de domínio
+- **Value Objects**: Encapsulando conceitos importantes como Email e Password
+- **DTO (Data Transfer Objects)**: Para transferência segura de dados entre camadas
+- **Factory Method**: Na criação de instâncias através do container
+- **Singleton**: No container de dependências para uso em toda aplicação
+- **Middleware Pattern**: Para processamento em cadeia de requisições HTTP
+- **Domain-Driven Design**: Entidades ricas com comportamentos próprios e validações de domínio
+
+### Princípios SOLID
+
+- **Single Responsibility**: Cada classe tem uma única responsabilidade
+- **Open/Closed**: Extensível sem modificação (via interfaces)
+- **Liskov Substitution**: Implementações podem substituir interfaces
+- **Interface Segregation**: Interfaces pequenas e específicas
+- **Dependency Inversion**: Dependência em abstrações, não implementações
+
+### Gestão de Erros
+
+Sistema de erros centralizado com hierarquia de exceções tipadas para facilitar o tratamento e resposta adequada para cada tipo de erro.
+
 ## 🌟 Funcionalidades
 
 - **Catálogo de Professores:** Busca e visualização de perfis de professores
