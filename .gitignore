@@ -51,3 +51,7 @@ ormconfig.js
 # Temporários
 tmp/
 temp/
+
+# Jest
+dist/
+.jestignore
