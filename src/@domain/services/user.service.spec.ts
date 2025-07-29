@@ -22,6 +22,16 @@ function createFakeUser(overrides: Partial<User> = {}): User {
   return user;
 }
 
+function setupUpdateUserMocks(
+  userRepository: any,
+  overrides: Partial<User> = {}
+) {
+  const fakeUser = createFakeUser(overrides);
+  userRepository.findById.mock.mockImplementation(async () => fakeUser);
+  userRepository.update.mock.mockImplementation(async (user: User) => user);
+  return fakeUser;
+}
+
 describe("UserService", () => {
   let userRepository: any;
   let service: UserService;
@@ -107,16 +117,12 @@ describe("UserService", () => {
 
   test("should update user name and bio", async () => {
     // Arrange
-    const fakeUser = createFakeUser();
-    userRepository.findById.mock.mockImplementation(async () => fakeUser);
-    userRepository.update.mock.mockImplementation(async (user: User) => user);
-
+    const fakeUser = setupUpdateUserMocks(userRepository);
     // Act
     const updated = await service.updateUser(fakeUser.id, {
       name: "New Name",
       bio: "New Bio",
     });
-
     // Assert
     assert.equal(updated.name, "New Name");
     assert.equal(updated.bio, "New Bio");
@@ -124,16 +130,12 @@ describe("UserService", () => {
 
   test("should update user email", async () => {
     // Arrange
-    const fakeUser = createFakeUser();
-    userRepository.findById.mock.mockImplementation(async () => fakeUser);
+    const fakeUser = setupUpdateUserMocks(userRepository);
     userRepository.findByEmail.mock.mockImplementation(async () => null);
-    userRepository.update.mock.mockImplementation(async (user: User) => user);
-
     // Act
     const updated = await service.updateUser(fakeUser.id, {
       email: "new@email.com",
     });
-
     // Assert
     assert.equal(updated.email.toString(), "new@email.com");
   });
@@ -160,15 +162,11 @@ describe("UserService", () => {
 
   test("should update user password", async () => {
     // Arrange
-    const fakeUser = createFakeUser();
-    userRepository.findById.mock.mockImplementation(async () => fakeUser);
-    userRepository.update.mock.mockImplementation(async (user: User) => user);
-
+    const fakeUser = setupUpdateUserMocks(userRepository);
     // Act
     const updated = await service.updateUser(fakeUser.id, {
       password: "abc78901",
     });
-
     // Assert
     assert(updated.password instanceof Password);
     assert(await updated.password.compare("abc78901"));
@@ -177,45 +175,33 @@ describe("UserService", () => {
 
   test("should update user role", async () => {
     // Arrange
-    const fakeUser = createFakeUser();
-    userRepository.findById.mock.mockImplementation(async () => fakeUser);
-    userRepository.update.mock.mockImplementation(async (user: User) => user);
-
+    const fakeUser = setupUpdateUserMocks(userRepository);
     // Act
     const updated = await service.updateUser(fakeUser.id, {
       role: UserRole.ADMIN,
     });
-
     // Assert
     assert.equal(updated.role, UserRole.ADMIN);
   });
 
   test("should update user avatar", async () => {
     // Arrange
-    const fakeUser = createFakeUser();
-    userRepository.findById.mock.mockImplementation(async () => fakeUser);
-    userRepository.update.mock.mockImplementation(async (user: User) => user);
-
+    const fakeUser = setupUpdateUserMocks(userRepository);
     // Act
     const updated = await service.updateUser(fakeUser.id, {
       avatar: "new-avatar.png",
     });
-
     // Assert
     assert.equal(updated.avatar, "new-avatar.png");
   });
 
   test("should set user as verified", async () => {
     // Arrange
-    const fakeUser = createFakeUser();
-    userRepository.findById.mock.mockImplementation(async () => fakeUser);
-    userRepository.update.mock.mockImplementation(async (user: User) => user);
-
+    const fakeUser = setupUpdateUserMocks(userRepository);
     // Act
     const updated = await service.updateUser(fakeUser.id, {
       isVerified: true,
     });
-
     // Assert
     assert.equal(updated.isVerified, true);
   });
@@ -292,5 +278,7 @@ describe("UserService", () => {
 
     // Assert
     assert.deepEqual(result, { users: [fakeUser], total: 1 });
+    assert.equal(userRepository.findAll.mock.calls.length, 1);
+    assert.deepEqual(userRepository.findAll.mock.calls[0].arguments, [1, 10]);
   });
 });
