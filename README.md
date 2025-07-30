@@ -145,6 +145,14 @@ Sistema de erros centralizado com hierarquia de exceções tipadas para facilita
 - Proteção contra vulnerabilidades comuns (SQL Injection, XSS, etc)
 - Gestão segura de segredos com variáveis de ambiente
 
+## 📜 Migrations
+
+- Para criar uma nova migration, utilize o comando:
+
+```bash
+  npx tsx node_modules/typeorm/cli.js migration:generate src/@infrastructure/database/migrations/<Nome da Entidade> --dataSource src/@infrastructure/database/data-source.ts
+```
+
 ## 📊 Testes e Qualidade
 
 - Testes unitários

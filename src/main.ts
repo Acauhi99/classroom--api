@@ -21,6 +21,8 @@ async function initializeDatabase() {
   try {
     await AppDataSource.initialize();
     console.log("📦 Database connection established");
+    await AppDataSource.runMigrations();
+    console.log("📜 Migrations executed");
   } catch (error) {
     throw new DatabaseError("Failed to initialize database", [
       { cause: error },
