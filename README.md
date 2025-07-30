@@ -147,7 +147,7 @@ Sistema de erros centralizado com hierarquia de exceções tipadas para facilita
 
 ## 📊 Testes e Qualidade
 
-- Testes unitários com Jest
+- Testes unitários
 - Testes de integração
 - ESLint para análise estática de código
 - Pipeline CI/CD automatizada
