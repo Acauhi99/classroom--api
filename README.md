@@ -57,9 +57,8 @@ pnpm run migration:run
 ## 🏃‍♂️ Scripts disponíveis
 
 - `pnpm start` - Inicia a aplicação
-- `pnpm run dev` - Inicia a aplicação em modo desenvolvimento com hot-reload
-- `pnpm run build` - Compila o TypeScript para JavaScript
-- `pnpm run lint` - Executa o linter para verificar o código
+- `pnpm dev` - Inicia a aplicação em modo desenvolvimento com hot-reload
+- `pnpm lint` - Executa o linter para verificar o código
 - `pnpm test` - Executa os testes
 
 ## 🏗️ Arquitetura
@@ -68,56 +67,29 @@ A aplicação segue uma arquitetura em camadas:
 
 - **Controller → Service → Repository**
 
-### Estrutura de diretórios
+### Fluxo de Requisição
 
-```
-├── @domain
-│   ├── entities
-│   │   └── user.entity.ts
-│   ├── interfaces
-│   │   ├── cache-service.interface.ts
-│   │   └── user-repository.interface.ts
-│   ├── services
-│   │   └── user.service.ts
-│   └── value-objects
-│       ├── email.value-object.ts
-│       └── password.value-object.ts
-├── @http
-│   ├── controllers
-│   │   └── user.controller.ts
-│   ├── dtos
-│   │   └── user.dto.ts
-│   ├── middlewares
-│   │   ├── context.middleware.ts
-│   │   ├── error-handler.middleware.ts
-│   │   ├── not-found.middleware.ts
-│   │   └── validate-request.middleware.ts
-│   ├── routes
-│   │   └── user.route.ts
-│   └── utils
-│       ├── controller.util.ts
-│       ├── middleware.util.ts
-│       ├── routes.util.ts
-│       └── setup-middlewares.util.ts
-├── @infrastructure
-│   ├── cache
-│   │   └── memcached-service.ts
-│   ├── database
-│   │   └── data-source.ts
-│   ├── email
-│   ├── gateways
-│   ├── logging
-│   ├── payment
-│   ├── repositories
-│   │   └── user.repository.ts
-│   └── websocket
-├── main.ts
-└── shared
-    ├── container
-    │   └── dependency-container.ts
-    └── errors
-        └── application-errors.ts
-```
+1. **Recepção da Requisição:**  
+   O usuário faz uma requisição HTTP (ex: cadastro de usuário).  
+   O Express encaminha para o controller correspondente.
+
+2. **Controller:**  
+   O controller recebe os dados, valida o formato (usando DTOs e middlewares) e chama o serviço apropriado.
+
+3. **Service:**  
+   O service contém a lógica de negócio. Ele pode validar regras, criar entidades, manipular value objects e orquestrar operações.  
+   Se precisar acessar dados, ele utiliza um repositório (interface).
+
+4. **Repository:**  
+   O repositório implementa a interface definida no domínio e faz a comunicação com o banco de dados (via TypeORM).  
+   Ele retorna entidades ou value objects para o service.
+
+5. **Resposta:**  
+   O controller recebe o resultado do service e monta a resposta HTTP adequada.
+
+6. **Outras Camadas:**
+   - Middlewares tratam autenticação, erros e contexto da requisição.
+   - Serviços de infraestrutura (cache, email, pagamentos) são injetados via container de dependências.
 
 ## 🧩 Padrões Arquiteturais e de Design
 
