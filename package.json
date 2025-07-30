@@ -11,7 +11,6 @@
   "scripts": {
     "start": "node --import=tsx/esm src/main.ts",
     "dev": "node --watch --import=tsx/esm src/main.ts",
-    "build": "tsc",
     "lint": "eslint src --ext .ts",
     "test": "node --test --import=tsx/esm \"src/**/*.spec.ts\""
   },
@@ -37,6 +36,7 @@
     "ulid": "^3.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.32.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",

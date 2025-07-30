@@ -27,7 +27,7 @@ export const compose = (...middlewares: Middleware[]) => {
   };
 };
 
-export const requireRoles = (roles: string[]) => {
+export const requireRoles = (_roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     // Será implementado quando adicionar autenticação
     next();

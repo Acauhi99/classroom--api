@@ -6,7 +6,7 @@ export function errorHandlerMiddleware(
   error: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): Response {
   console.error(`[ERROR] ${error.stack || error.message}`);
 
