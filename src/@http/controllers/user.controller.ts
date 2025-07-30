@@ -1,13 +1,23 @@
 import { Request, Response } from "express";
 import { plainToInstance } from "class-transformer";
 import { UserService } from "../../@domain/services/user.service.js";
-import { UserResponseDto } from "../dtos/user.dto.js";
+import {
+  UserResponseDto,
+  CreateUserDto,
+  UpdateUserDto,
+} from "../dtos/user.dto.js";
+import {
+  CreateUserInput,
+  UpdateUserInput,
+} from "../../@domain/types/user-inputs.js";
 
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   async create(req: Request, res: Response): Promise<Response> {
-    const user = await this.userService.createUser(req.body);
+    const dto = plainToInstance(CreateUserDto, req.body);
+    const input = mapCreateUserDtoToInput(dto);
+    const user = await this.userService.createUser(input);
 
     const userResponse = plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
@@ -59,7 +69,9 @@ export class UserController {
 
   async update(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
-    const user = await this.userService.updateUser(id, req.body);
+    const dto = plainToInstance(UpdateUserDto, req.body);
+    const input = mapUpdateUserDtoToInput(dto);
+    const user = await this.userService.updateUser(id, input);
 
     const userResponse = plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
@@ -77,4 +89,27 @@ export class UserController {
 
     return res.status(204).send();
   }
+}
+
+function mapCreateUserDtoToInput(dto: CreateUserDto): CreateUserInput {
+  return {
+    name: dto.name,
+    email: dto.email,
+    password: dto.password,
+    role: dto.role,
+    bio: dto.bio,
+    avatar: dto.avatar,
+  };
+}
+
+function mapUpdateUserDtoToInput(dto: UpdateUserDto): UpdateUserInput {
+  return {
+    name: dto.name,
+    email: dto.email,
+    password: dto.password,
+    role: dto.role,
+    bio: dto.bio,
+    avatar: dto.avatar,
+    isVerified: dto.isVerified,
+  };
 }

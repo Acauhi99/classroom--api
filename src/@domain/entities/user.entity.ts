@@ -8,6 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { CreateUserInput, UpdateUserInput } from "../types/user-inputs.js";
 
 export enum UserRole {
   STUDENT = "student",
@@ -63,31 +64,30 @@ export class User {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  static create(props: {
-    name: string;
-    email: Email;
-    password: Password;
-    role: UserRole;
-    bio?: string;
-    avatar?: string;
-  }): User {
+  static async create(props: CreateUserInput): Promise<User> {
     const user = new User();
+
     user.id = ulid();
     user.name = props.name;
-    user.email = props.email;
-    user.password = props.password;
+    user.email = new Email(props.email);
+    user.password = await Password.create(props.password).hash();
     user.role = props.role;
     user.bio = props.bio;
     user.avatar = props.avatar;
     user.isVerified = false;
+
     return user;
   }
 
-  update(props: Partial<User>): void {
-    if (props.name) this.name = props.name;
-    if (props.email) this.email = props.email;
-    if (props.password) this.password = props.password;
-    if (props.role) this.role = props.role;
+  async update(props: UpdateUserInput): Promise<void> {
+    if (props.email && props.email !== this.email.toString()) {
+      this.email = new Email(props.email);
+    }
+    if (props.password) {
+      this.password = await Password.create(props.password).hash();
+    }
+    if (props.name !== undefined) this.name = props.name;
+    if (props.role !== undefined) this.role = props.role;
     if (props.bio !== undefined) this.bio = props.bio;
     if (props.avatar !== undefined) this.avatar = props.avatar;
     if (props.isVerified !== undefined) this.isVerified = props.isVerified;

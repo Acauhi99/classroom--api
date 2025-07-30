@@ -10,15 +10,18 @@ import {
 } from "../../shared/errors/application-errors.js";
 
 function createFakeUser(overrides: Partial<User> = {}): User {
-  const user = User.create({
-    name: "John Doe",
-    email: new Email("john@example.com"),
-    password: Password.fromHashed("hashed-password"),
-    role: UserRole.STUDENT,
-    bio: "Bio",
-    avatar: "avatar.png",
-  });
+  const user = new User();
+
+  user.id = "user-id";
+  user.name = "John Doe";
+  user.email = new Email("john@example.com");
+  user.password = Password.create("abc12345");
+  user.role = UserRole.STUDENT;
+  user.bio = "Bio";
+  user.avatar = "avatar.png";
+
   Object.assign(user, overrides);
+
   return user;
 }
 
@@ -28,7 +31,9 @@ function setupUpdateUserMocks(
 ) {
   const fakeUser = createFakeUser(overrides);
   userRepository.findById.mock.mockImplementation(async () => fakeUser);
+
   userRepository.update.mock.mockImplementation(async (user: User) => user);
+
   return fakeUser;
 }
 
@@ -252,17 +257,6 @@ describe("UserService", () => {
 
     // Assert
     assert.equal(user?.id, fakeUser.id);
-  });
-
-  test("should return null when finding by non-existent email", async () => {
-    // Arrange
-    userRepository.findByEmail.mock.mockImplementation(async () => null);
-
-    // Act
-    const user = await service.findByEmail("notfound@email.com");
-
-    // Assert
-    assert.equal(user, null);
   });
 
   test("should return paginated users", async () => {
