@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { plainToInstance } from "class-transformer";
-import { UserService } from "../../@domain/services/user.service.js";
+import { UserService } from "../../@domain/services/user/user.service.js";
 import {
   UserResponseDto,
   CreateUserDto,

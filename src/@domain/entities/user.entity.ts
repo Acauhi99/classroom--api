@@ -1,6 +1,4 @@
 import { ulid } from "ulid";
-import { Email } from "../value-objects/email.value-object.js";
-import { Password } from "../value-objects/password.value-object.js";
 import {
   Entity,
   Column,
@@ -9,6 +7,8 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { CreateUserInput, UpdateUserInput } from "../types/user-inputs.js";
+import { Email } from "../value-objects/user/email.value-object.js";
+import { Password } from "../value-objects/user/password.value-object.js";
 
 export enum UserRole {
   STUDENT = "student",

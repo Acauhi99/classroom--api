@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { ValidationError } from "../../shared/errors/application-errors.js";
+import { ValidationError } from "../../../shared/errors/application-errors.js";
 
 export class Password {
   private readonly value: string;

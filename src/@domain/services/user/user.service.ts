@@ -1,13 +1,13 @@
-import { User } from "../entities/user.entity.js";
-import { IUserRepository } from "../interfaces/user-repository.interface.js";
+import { User } from "../../entities/user.entity.js";
 import {
   NotFoundError,
   ConflictError,
-} from "../../shared/errors/application-errors.js";
-import { CreateUserInput, UpdateUserInput } from "../types/user-inputs.js";
+} from "../../../shared/errors/application-errors.js";
+import { CreateUserInput, UpdateUserInput } from "../../types/user-inputs.js";
+import { IEntityRepository } from "../../interfaces/entity-repository.interface.js";
 
 export class UserService {
-  constructor(private readonly userRepository: IUserRepository) {}
+  constructor(private readonly userRepository: IEntityRepository<User>) {}
 
   async findById(id: string): Promise<User> {
     const user = await this.userRepository.findById(id);

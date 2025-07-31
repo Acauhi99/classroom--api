@@ -1,13 +1,13 @@
 import { test, describe, beforeEach, mock } from "node:test";
 import assert from "node:assert/strict";
-import { UserService } from "./user.service.js";
-import { User, UserRole } from "../entities/user.entity.js";
-import { Email } from "../value-objects/email.value-object.js";
-import { Password } from "../value-objects/password.value-object.js";
+import { User, UserRole } from "../../entities/user.entity.js";
+import { Email } from "../../value-objects/user/email.value-object.js";
+import { Password } from "../../value-objects/user/password.value-object.js";
 import {
-  NotFoundError,
   ConflictError,
-} from "../../shared/errors/application-errors.js";
+  NotFoundError,
+} from "../../../shared/errors/application-errors.js";
+import { UserService } from "./user.service.js";
 
 function createFakeUser(overrides: Partial<User> = {}): User {
   const user = new User();

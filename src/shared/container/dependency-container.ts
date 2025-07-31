@@ -1,9 +1,9 @@
 import { EntityManager } from "typeorm";
 import { AppDataSource } from "../../@infrastructure/database/data-source.js";
 import { UserRepository } from "../../@infrastructure/repositories/user.repository.js";
-import { UserService } from "../../@domain/services/user.service.js";
+import { UserService } from "../../@domain/services/user/user.service.js";
 import { UserController } from "../../@http/controllers/user.controller.js";
-import { IUserRepository } from "../../@domain/interfaces/user-repository.interface.js";
+import { IUserRepository } from "../../@domain/interfaces/entity-repository.interface.js";
 import {
   DependencyError,
   ConfigurationError,

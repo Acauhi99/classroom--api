@@ -1,4 +1,5 @@
-import { ValidationError } from "../../shared/errors/application-errors.js";
+import { ValidationError } from "../../../shared/errors/application-errors.js";
+
 
 export class Email {
   private readonly value: string;
