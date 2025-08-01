@@ -37,7 +37,7 @@ Exemplo:
 ts
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { Email } from '../../../@domain/value-objects/email.value-object.ts';
+import { Email } from './email.value-object.ts';
 
 describe('Email', () => {
 it('should create a valid email', () => {
@@ -66,7 +66,7 @@ Exemplo:
 ts
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import { services } from '../../src/container';
+import { services } from '';
 
 describe('UserService', () => {
 beforeEach(async () => {
