@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
-import { ValidationError } from "../../../shared/errors/application-errors.js";
+import { Either, left, right } from "../../../shared/errors/either.js";
+import { InvalidPasswordError } from "../../../shared/errors/user.errors.js";
 
 export class Password {
   private readonly value: string;
@@ -10,11 +11,12 @@ export class Password {
     this.hashed = hashed;
   }
 
-  static create(password: string): Password {
+  static create(password: string): Either<InvalidPasswordError, Password> {
     if (!this.validate(password)) {
-      throw new ValidationError("Invalid password format");
+      return left(new InvalidPasswordError());
     }
-    return new Password(password, false);
+
+    return right(new Password(password, false));
   }
 
   static fromHashed(hashedPassword: string): Password {
@@ -33,12 +35,13 @@ export class Password {
     }
 
     const hashedPassword = await bcrypt.hash(this.value, 10);
+
     return Password.fromHashed(hashedPassword);
   }
 
   async compare(plainPassword: string): Promise<boolean> {
     if (!this.hashed) {
-      throw new ValidationError("Cannot compare with a non-hashed password");
+      return false;
     }
 
     return bcrypt.compare(plainPassword, this.value);

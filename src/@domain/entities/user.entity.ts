@@ -9,6 +9,11 @@ import {
 import { CreateUserInput, UpdateUserInput } from "../types/user-inputs.js";
 import { Email } from "../value-objects/user/email.value-object.js";
 import { Password } from "../value-objects/user/password.value-object.js";
+import { Either, left, right } from "../../shared/errors/either.js";
+import {
+  InvalidEmailError,
+  InvalidPasswordError,
+} from "../../shared/errors/user.errors.js";
 
 export enum UserRole {
   STUDENT = "student",
@@ -29,7 +34,15 @@ export class User {
     unique: true,
     transformer: {
       to: (value: Email): string => value.toString(),
-      from: (value: string): Email => new Email(value),
+      from: (value: string): Email => {
+        const result = Email.create(value);
+
+        if (result.isRight()) {
+          return result.value;
+        }
+
+        throw new InvalidEmailError();
+      },
     },
   })
   email!: Email;
@@ -64,32 +77,58 @@ export class User {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  static async create(props: CreateUserInput): Promise<User> {
-    const user = new User();
+  static async create(
+    props: CreateUserInput
+  ): Promise<Either<InvalidEmailError | InvalidPasswordError, User>> {
+    const emailResult = Email.create(props.email);
 
+    if (emailResult.isLeft()) {
+      return left(emailResult.value);
+    }
+
+    const passwordResult = Password.create(props.password);
+    if (passwordResult.isLeft()) {
+      return left(passwordResult.value);
+    }
+
+    const hashedPassword = await passwordResult.value.hash();
+
+    const user = new User();
     user.id = ulid();
     user.name = props.name;
-    user.email = new Email(props.email);
-    user.password = await Password.create(props.password).hash();
+    user.email = emailResult.value;
+    user.password = hashedPassword;
     user.role = props.role;
     user.bio = props.bio;
     user.avatar = props.avatar;
     user.isVerified = false;
 
-    return user;
+    return right(user);
   }
 
-  async update(props: UpdateUserInput): Promise<void> {
+  async update(props: UpdateUserInput): Promise<Either<Error, void>> {
     if (props.email && props.email !== this.email.toString()) {
-      this.email = new Email(props.email);
+      const emailResult = Email.create(props.email);
+      if (emailResult.isLeft()) {
+        return left(emailResult.value);
+      }
+      this.email = emailResult.value;
     }
     if (props.password) {
-      this.password = await Password.create(props.password).hash();
+      const passwordResult = Password.create(props.password);
+
+      if (passwordResult.isLeft()) {
+        return left(passwordResult.value);
+      }
+
+      this.password = await passwordResult.value.hash();
     }
     if (props.name !== undefined) this.name = props.name;
     if (props.role !== undefined) this.role = props.role;
     if (props.bio !== undefined) this.bio = props.bio;
     if (props.avatar !== undefined) this.avatar = props.avatar;
     if (props.isVerified !== undefined) this.isVerified = props.isVerified;
+
+    return right(undefined);
   }
 }

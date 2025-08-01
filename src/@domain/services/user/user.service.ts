@@ -1,32 +1,35 @@
 import { User } from "../../entities/user.entity.js";
-import {
-  NotFoundError,
-  ConflictError,
-} from "../../../shared/errors/application-errors.js";
 import { CreateUserInput, UpdateUserInput } from "../../types/user-inputs.js";
 import { IEntityRepository } from "../../interfaces/entity-repository.interface.js";
+import { Either, left, right } from "../../../shared/errors/either.js";
+import {
+  EmailAlreadyInUseError,
+  UserNotFoundError,
+  InvalidEmailError,
+  InvalidPasswordError,
+} from "../../../shared/errors/user.errors.js";
 
 export class UserService {
   constructor(private readonly userRepository: IEntityRepository<User>) {}
 
-  async findById(id: string): Promise<User> {
+  async findById(id: string): Promise<Either<UserNotFoundError, User>> {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new NotFoundError("User");
+      return left(new UserNotFoundError());
     }
 
-    return user;
+    return right(user);
   }
 
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string): Promise<Either<UserNotFoundError, User>> {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
-      throw new NotFoundError("User");
+      return left(new UserNotFoundError());
     }
 
-    return user;
+    return right(user);
   }
 
   async findAll(
@@ -36,21 +39,38 @@ export class UserService {
     return this.userRepository.findAll(page, limit);
   }
 
-  async createUser(userData: CreateUserInput): Promise<User> {
+  async createUser(
+    userData: CreateUserInput
+  ): Promise<
+    Either<
+      EmailAlreadyInUseError | InvalidEmailError | InvalidPasswordError,
+      User
+    >
+  > {
     const existingUser = await this.userRepository.findByEmail(userData.email);
 
     if (existingUser) {
-      throw new ConflictError("Email already in use");
+      return left(new EmailAlreadyInUseError());
     }
 
-    const user = await User.create(userData);
+    const userResult = await User.create(userData);
 
-    return this.userRepository.create(user);
+    if (userResult.isLeft()) {
+      return left(userResult.value);
+    }
+
+    const created = await this.userRepository.create(userResult.value);
+
+    return right(created);
   }
 
-  async updateUser(id: string, userData: UpdateUserInput): Promise<User> {
+  async updateUser(
+    id: string,
+    userData: UpdateUserInput
+  ): Promise<Either<UserNotFoundError | EmailAlreadyInUseError, User>> {
     const user = await this.userRepository.findById(id);
-    if (!user) throw new NotFoundError("User");
+
+    if (!user) return left(new UserNotFoundError());
 
     if (userData.email && userData.email !== user.email.toString()) {
       const existingUser = await this.userRepository.findByEmail(
@@ -58,22 +78,25 @@ export class UserService {
       );
 
       if (existingUser && existingUser.id !== id) {
-        throw new ConflictError("Email already in use");
+        return left(new EmailAlreadyInUseError());
       }
     }
 
     await user.update(userData);
+    const updated = await this.userRepository.update(user);
 
-    return this.userRepository.update(user);
+    return right(updated);
   }
 
-  async deleteUser(id: string): Promise<void> {
+  async deleteUser(id: string): Promise<Either<UserNotFoundError, void>> {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new NotFoundError("User");
+      return left(new UserNotFoundError());
     }
 
     await this.userRepository.delete(id);
+
+    return right(undefined);
   }
 }
