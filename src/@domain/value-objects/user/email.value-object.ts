@@ -17,7 +17,12 @@ export class Email {
   }
 
   private static validate(email: string): boolean {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!email || email.trim() !== email || email.includes(" ")) {
+      return false;
+    }
+
+    const emailRegex =
+      /^[a-zA-Z0-9]([a-zA-Z0-9._+%-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.([a-zA-Z]{2,})$/;
 
     return emailRegex.test(email);
   }
