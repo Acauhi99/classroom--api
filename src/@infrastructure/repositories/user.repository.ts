@@ -1,8 +1,7 @@
 import { EntityManager, Repository } from "typeorm";
 import { User } from "../../@domain/entities/user.entity.js";
-import { IEntityRepository } from "../../@domain/interfaces/entity-repository.interface.js";
 
-export class UserRepository implements IEntityRepository<User> {
+export class UserRepository {
   private repository: Repository<User>;
 
   constructor(private readonly entityManager: EntityManager) {

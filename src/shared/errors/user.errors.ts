@@ -25,3 +25,10 @@ export class InvalidPasswordError extends Error {
     this.name = "InvalidPasswordError";
   }
 }
+
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}

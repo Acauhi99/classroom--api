@@ -3,17 +3,14 @@ import { AppDataSource } from "../../@infrastructure/database/data-source.js";
 import { UserRepository } from "../../@infrastructure/repositories/user.repository.js";
 import { UserService } from "../../@domain/services/user/user.service.js";
 import { UserController } from "../../@http/controllers/user.controller.js";
-import { User } from "../../@domain/entities/user.entity.js";
-import { IEntityRepository } from "../../@domain/interfaces/entity-repository.interface.js";
 
 const factories = {
   createEntityManager: (): EntityManager => AppDataSource.manager,
 
-  createUserRepository: (
-    entityManager: EntityManager
-  ): IEntityRepository<User> => new UserRepository(entityManager),
+  createUserRepository: (entityManager: EntityManager): UserRepository =>
+    new UserRepository(entityManager),
 
-  createUserService: (userRepository: IEntityRepository<User>): UserService =>
+  createUserService: (userRepository: UserRepository): UserService =>
     new UserService(userRepository),
 
   createUserController: (userService: UserService): UserController =>
@@ -96,7 +93,7 @@ class Container {
 export const container = Container.getInstance();
 
 export const repositories = {
-  get userRepository(): IEntityRepository<User> {
+  get userRepository(): UserRepository {
     return container.get("userRepository");
   },
 };

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 import { UserService } from "../../@domain/services/user/user.service.js";
 import {
   UserResponseDto,
@@ -10,39 +11,38 @@ import {
   CreateUserInput,
   UpdateUserInput,
 } from "../../@domain/types/user-inputs.js";
-import {
-  EmailAlreadyInUseError,
-  UserNotFoundError,
-  InvalidEmailError,
-  InvalidPasswordError,
-} from "../../shared/errors/user.errors.js";
 
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   async create(req: Request, res: Response): Promise<Response> {
     const dto = plainToInstance(CreateUserDto, req.body);
-    const input = mapCreateUserDtoToInput(dto);
-    const result = await this.userService.createUser(input);
+    const validationErrors = await validate(dto);
+
+    if (validationErrors.length > 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "Validation failed",
+        errors: validationErrors.map((error) => ({
+          field: error.property,
+          messages: Object.values(error.constraints || {}),
+        })),
+      });
+    }
+
+    const userData: CreateUserInput = {
+      name: dto.name,
+      email: dto.email,
+      password: dto.password,
+      role: dto.role,
+      bio: dto.bio,
+      avatar: dto.avatar,
+    };
+
+    const result = await this.userService.createUser(userData);
 
     if (result.isLeft()) {
-      if (result.value instanceof EmailAlreadyInUseError) {
-        return res
-          .status(409)
-          .json({ status: "error", message: result.value.message });
-      }
-      if (
-        result.value instanceof InvalidEmailError ||
-        result.value instanceof InvalidPasswordError
-      ) {
-        return res
-          .status(400)
-          .json({ status: "error", message: result.value.message });
-      }
-
-      return res
-        .status(400)
-        .json({ status: "error", message: "Unknown error" });
+      return this.handleError(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -61,9 +61,7 @@ export class UserController {
     const result = await this.userService.findById(id);
 
     if (result.isLeft()) {
-      return res
-        .status(404)
-        .json({ status: "error", message: result.value.message });
+      return this.handleError(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -80,23 +78,33 @@ export class UserController {
     const { id } = req.params;
 
     const dto = plainToInstance(UpdateUserDto, req.body);
-    const input = mapUpdateUserDtoToInput(dto);
-    const result = await this.userService.updateUser(id, input);
+    const validationErrors = await validate(dto);
+
+    if (validationErrors.length > 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "Validation failed",
+        errors: validationErrors.map((error) => ({
+          field: error.property,
+          messages: Object.values(error.constraints || {}),
+        })),
+      });
+    }
+
+    const userData: UpdateUserInput = {
+      name: dto.name,
+      email: dto.email,
+      password: dto.password,
+      role: dto.role,
+      bio: dto.bio,
+      avatar: dto.avatar,
+      isVerified: dto.isVerified,
+    };
+
+    const result = await this.userService.updateUser(id, userData);
 
     if (result.isLeft()) {
-      if (result.value instanceof UserNotFoundError) {
-        return res
-          .status(404)
-          .json({ status: "error", message: result.value.message });
-      }
-      if (result.value instanceof EmailAlreadyInUseError) {
-        return res
-          .status(409)
-          .json({ status: "error", message: result.value.message });
-      }
-      return res
-        .status(400)
-        .json({ status: "error", message: (result.value as Error).message });
+      return this.handleError(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -115,9 +123,7 @@ export class UserController {
     const result = await this.userService.deleteUser(id);
 
     if (result.isLeft()) {
-      return res
-        .status(404)
-        .json({ status: "error", message: result.value.message });
+      return this.handleError(res, result.value);
     }
 
     return res.status(204).send();
@@ -141,27 +147,24 @@ export class UserController {
       limit,
     });
   }
-}
 
-function mapCreateUserDtoToInput(dto: CreateUserDto): CreateUserInput {
-  return {
-    name: dto.name,
-    email: dto.email,
-    password: dto.password,
-    role: dto.role,
-    bio: dto.bio,
-    avatar: dto.avatar,
-  };
-}
+  private handleError(res: Response, error: Error): Response {
+    const errorMap: Record<string, { status: number; message: string }> = {
+      UserNotFoundError: { status: 404, message: error.message },
+      EmailAlreadyInUseError: { status: 409, message: error.message },
+      InvalidEmailError: { status: 400, message: error.message },
+      InvalidPasswordError: { status: 400, message: error.message },
+      ValidationError: { status: 400, message: error.message },
+    };
 
-function mapUpdateUserDtoToInput(dto: UpdateUserDto): UpdateUserInput {
-  return {
-    name: dto.name,
-    email: dto.email,
-    password: dto.password,
-    role: dto.role,
-    bio: dto.bio,
-    avatar: dto.avatar,
-    isVerified: dto.isVerified,
-  };
+    const errorConfig = errorMap[error.constructor.name] || {
+      status: 500,
+      message: "Internal server error",
+    };
+
+    return res.status(errorConfig.status).json({
+      status: "error",
+      message: errorConfig.message,
+    });
+  }
 }

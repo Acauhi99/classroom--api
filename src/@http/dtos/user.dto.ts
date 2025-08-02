@@ -6,6 +6,7 @@ import {
   IsString,
   MinLength,
   Matches,
+  IsBoolean,
 } from "class-validator";
 import { UserRole } from "../../@domain/entities/user.entity.js";
 
@@ -27,46 +28,47 @@ export class CreateUserDto {
   @IsEnum(UserRole, { message: "Invalid user role" })
   role!: UserRole;
 
-  @IsString({ message: "Bio must be a string" })
   @IsOptional()
+  @IsString({ message: "Bio must be a string" })
   bio?: string;
 
-  @IsString({ message: "Avatar must be a string" })
   @IsOptional()
+  @IsString({ message: "Avatar must be a string" })
   avatar?: string;
 }
 
 export class UpdateUserDto {
+  @IsOptional()
   @IsString({ message: "Name must be a string" })
   @MinLength(2, { message: "Name must be at least 2 characters long" })
-  @IsOptional()
   name?: string;
 
-  @IsEmail({}, { message: "Invalid email format" })
   @IsOptional()
+  @IsEmail({}, { message: "Invalid email format" })
   email?: string;
 
+  @IsOptional()
   @IsString({ message: "Password must be a string" })
   @MinLength(8, { message: "Password must be at least 8 characters long" })
   @Matches(/(?=.*[0-9])(?=.*[a-zA-Z])/, {
     message: "Password must contain at least one letter and one number",
   })
-  @IsOptional()
   password?: string;
 
-  @IsEnum(UserRole, { message: "Invalid user role" })
   @IsOptional()
+  @IsEnum(UserRole, { message: "Invalid user role" })
   role?: UserRole;
 
-  @IsString({ message: "Bio must be a string" })
   @IsOptional()
+  @IsString({ message: "Bio must be a string" })
   bio?: string;
 
-  @IsString({ message: "Avatar must be a string" })
   @IsOptional()
+  @IsString({ message: "Avatar must be a string" })
   avatar?: string;
 
   @IsOptional()
+  @IsBoolean({ message: "isVerified must be a boolean" })
   isVerified?: boolean;
 }
 

@@ -21,6 +21,8 @@ export enum UserRole {
   ADMIN = "admin",
 }
 
+type InvalidUserError = InvalidEmailError | InvalidPasswordError;
+
 @Entity("users")
 export class User {
   @PrimaryColumn("varchar")
@@ -36,11 +38,9 @@ export class User {
       to: (value: Email): string => value.toString(),
       from: (value: string): Email => {
         const result = Email.create(value);
-
         if (result.isRight()) {
           return result.value;
         }
-
         throw new InvalidEmailError();
       },
     },
@@ -79,9 +79,8 @@ export class User {
 
   static async create(
     props: CreateUserInput
-  ): Promise<Either<InvalidEmailError | InvalidPasswordError, User>> {
+  ): Promise<Either<InvalidUserError, User>> {
     const emailResult = Email.create(props.email);
-
     if (emailResult.isLeft()) {
       return left(emailResult.value);
     }
@@ -106,7 +105,9 @@ export class User {
     return right(user);
   }
 
-  async update(props: UpdateUserInput): Promise<Either<Error, void>> {
+  async update(
+    props: UpdateUserInput
+  ): Promise<Either<InvalidUserError, void>> {
     if (props.email && props.email !== this.email.toString()) {
       const emailResult = Email.create(props.email);
       if (emailResult.isLeft()) {
@@ -114,15 +115,15 @@ export class User {
       }
       this.email = emailResult.value;
     }
+
     if (props.password) {
       const passwordResult = Password.create(props.password);
-
       if (passwordResult.isLeft()) {
         return left(passwordResult.value);
       }
-
       this.password = await passwordResult.value.hash();
     }
+
     if (props.name !== undefined) this.name = props.name;
     if (props.role !== undefined) this.role = props.role;
     if (props.bio !== undefined) this.bio = props.bio;
