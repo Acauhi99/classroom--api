@@ -55,3 +55,6 @@ temp/
 # Jest
 dist/
 .jestignore
+
+# Copilot
+.copilot

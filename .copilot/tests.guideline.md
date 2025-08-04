@@ -92,7 +92,7 @@ Objetivo: testar o roteamento, entrada/saída HTTP e comportamento do controller
 
 Regras:
 
-Utilize o fetch ou http.request para fazer chamadas reais para a aplicação em execução.
+Utilize http.request para fazer chamadas reais para a aplicação em execução.
 
 Garanta que a aplicação esteja rodando em modo teste.
 
