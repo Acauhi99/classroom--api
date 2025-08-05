@@ -1,18 +1,20 @@
 import { Response } from "express";
 
-type ErrorConfig = {
+type HttpErrorConfig = {
   status: number;
   message: string;
 };
 
-type ErrorMap = Record<string, ErrorConfig>;
+type HttpErrorMap = Record<string, HttpErrorConfig>;
 
-const BASE_ERROR_MAP: ErrorMap = {
+const DOMAIN_TO_HTTP_ERROR_MAP: HttpErrorMap = {
+  // User errors
   UserNotFoundError: { status: 404, message: "User not found" },
   EmailAlreadyInUseError: { status: 409, message: "Email already in use" },
   InvalidEmailError: { status: 400, message: "Invalid email format" },
   InvalidPasswordError: { status: 400, message: "Invalid password format" },
-  ValidationError: { status: 400, message: "Validation failed" },
+
+  // Config errors
   MissingEnvVarError: { status: 500, message: "Server configuration error" },
   InvalidEnvVarError: { status: 500, message: "Server configuration error" },
   ConfigFileNotFoundError: {
@@ -20,19 +22,22 @@ const BASE_ERROR_MAP: ErrorMap = {
     message: "Server configuration error",
   },
   ConfigValidationError: { status: 500, message: "Server configuration error" },
+
+  // Validation errors
+  ValidationError: { status: 400, message: "Validation failed" },
 };
 
-export function handleHttpError(
+export function mapDomainErrorToHttp(
   res: Response,
-  error: Error,
-  customErrorMap?: ErrorMap
+  domainError: Error,
+  customErrorMap?: HttpErrorMap
 ): Response {
-  const errorMap: ErrorMap = {
-    ...BASE_ERROR_MAP,
+  const errorMap: HttpErrorMap = {
+    ...DOMAIN_TO_HTTP_ERROR_MAP,
     ...customErrorMap,
   };
 
-  const errorConfig = errorMap[error.constructor.name] || {
+  const errorConfig = errorMap[domainError.constructor.name] || {
     status: 500,
     message: "Internal server error",
   };
@@ -43,8 +48,8 @@ export function handleHttpError(
   });
 }
 
-export function createErrorHandler(customErrorMap?: ErrorMap) {
-  return (res: Response, error: Error): Response => {
-    return handleHttpError(res, error, customErrorMap);
+export function createHttpErrorMapper(customErrorMap?: HttpErrorMap) {
+  return (res: Response, domainError: Error): Response => {
+    return mapDomainErrorToHttp(res, domainError, customErrorMap);
   };
 }

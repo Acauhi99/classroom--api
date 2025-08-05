@@ -11,7 +11,7 @@ import {
   CreateUserInput,
   UpdateUserInput,
 } from "../../@domain/types/user-inputs.js";
-import { handleHttpError } from "../../shared/errors/handle-http.errors.js";
+import { mapDomainErrorToHttp } from "../../shared/errors/handle-http.errors.js";
 
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -43,7 +43,7 @@ export class UserController {
     const result = await this.userService.createUser(userData);
 
     if (result.isLeft()) {
-      return handleHttpError(res, result.value);
+      return mapDomainErrorToHttp(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -62,7 +62,7 @@ export class UserController {
     const result = await this.userService.findById(id);
 
     if (result.isLeft()) {
-      return handleHttpError(res, result.value);
+      return mapDomainErrorToHttp(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -105,7 +105,7 @@ export class UserController {
     const result = await this.userService.updateUser(id, userData);
 
     if (result.isLeft()) {
-      return handleHttpError(res, result.value);
+      return mapDomainErrorToHttp(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -124,7 +124,7 @@ export class UserController {
     const result = await this.userService.deleteUser(id);
 
     if (result.isLeft()) {
-      return handleHttpError(res, result.value);
+      return mapDomainErrorToHttp(res, result.value);
     }
 
     return res.status(204).send();
