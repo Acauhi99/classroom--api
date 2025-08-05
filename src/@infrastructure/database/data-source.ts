@@ -19,17 +19,30 @@ function getDbConfig(): Either<MissingEnvVarError, DataSourceOptions> {
     if (!process.env[key]) return left(new MissingEnvVarError(key));
   }
 
+  const isTestEnv = process.env.NODE_ENV === "test";
+  const databaseName = isTestEnv
+    ? process.env.DB_TEST_NAME || `${process.env.DB_NAME}_test`
+    : process.env.DB_NAME;
+
   return right({
     type: "postgres",
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT as string),
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    logging: process.env.NODE_ENV !== "production",
-    synchronize: false,
+    database: databaseName,
+    logging: false,
+    synchronize: isTestEnv,
+    dropSchema: isTestEnv,
     entities: [User],
-    migrations: ["src/@infrastructure/database/migrations/**/*.ts"],
+    migrations: isTestEnv
+      ? []
+      : ["src/@infrastructure/database/migrations/**/*.ts"],
+    extra: {
+      max: 5,
+      min: 1,
+      idleTimeoutMillis: 10000,
+    },
   });
 }
 
