@@ -6,7 +6,15 @@ import { MissingEnvVarError } from "../../shared/errors/config.errors.js";
 
 config();
 
-function getDbConfig(): Either<MissingEnvVarError, DataSourceOptions> {
+interface DatabaseConfig {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
+}
+
+function validateRequiredEnvVars(): Either<MissingEnvVarError, DatabaseConfig> {
   const required = [
     "DB_HOST",
     "DB_PORT",
@@ -16,40 +24,99 @@ function getDbConfig(): Either<MissingEnvVarError, DataSourceOptions> {
   ];
 
   for (const key of required) {
-    if (!process.env[key]) return left(new MissingEnvVarError(key));
+    if (!process.env[key]) {
+      return left(new MissingEnvVarError(key));
+    }
+  }
+
+  const port = parseInt(process.env.DB_PORT!);
+  if (isNaN(port)) {
+    return left(new MissingEnvVarError("DB_PORT (must be a valid number)"));
   }
 
   const isTestEnv = process.env.NODE_ENV === "test";
-  const databaseName = isTestEnv
+  const database = isTestEnv
     ? process.env.DB_TEST_NAME || `${process.env.DB_NAME}_test`
-    : process.env.DB_NAME;
+    : process.env.DB_NAME!;
 
   return right({
+    host: process.env.DB_HOST!,
+    port,
+    username: process.env.DB_USERNAME!,
+    password: process.env.DB_PASSWORD!,
+    database,
+  });
+}
+
+function createConnectionPoolConfig() {
+  const isTestEnv = process.env.NODE_ENV === "test";
+
+  return {
+    max: isTestEnv ? 3 : 10,
+    min: isTestEnv ? 1 : 2,
+    idleTimeoutMillis: isTestEnv ? 5000 : 30000,
+    acquireTimeoutMillis: 10000,
+    evictionRunIntervalMillis: 10000,
+  };
+}
+
+function createDataSourceOptions(dbConfig: DatabaseConfig): DataSourceOptions {
+  const isTestEnv = process.env.NODE_ENV === "test";
+
+  return {
     type: "postgres",
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT as string),
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: databaseName,
+    host: dbConfig.host,
+    port: dbConfig.port,
+    username: dbConfig.username,
+    password: dbConfig.password,
+    database: dbConfig.database,
+
     logging: false,
     synchronize: isTestEnv,
     dropSchema: isTestEnv,
+
     entities: [User],
     migrations: isTestEnv
       ? []
       : ["src/@infrastructure/database/migrations/**/*.ts"],
-    extra: {
-      max: 5,
-      min: 1,
-      idleTimeoutMillis: 10000,
-    },
-  });
+
+    extra: createConnectionPoolConfig(),
+    connectTimeoutMS: 10000,
+    maxQueryExecutionTime: 5000,
+  };
 }
 
-const dbConfigResult = getDbConfig();
+function createDataSource(): Either<MissingEnvVarError, DataSource> {
+  const dbConfigResult = validateRequiredEnvVars();
 
-if (dbConfigResult.isLeft()) {
-  throw dbConfigResult.value;
+  if (dbConfigResult.isLeft()) {
+    return left(dbConfigResult.value);
+  }
+
+  const options = createDataSourceOptions(dbConfigResult.value);
+  const dataSource = new DataSource(options);
+
+  return right(dataSource);
 }
 
-export const AppDataSource = new DataSource(dbConfigResult.value);
+const dataSourceResult = createDataSource();
+
+if (dataSourceResult.isLeft()) {
+  throw dataSourceResult.value;
+}
+
+export const AppDataSource = dataSourceResult.value;
+
+export const DatabaseUtils = {
+  isTestEnvironment(): boolean {
+    return process.env.NODE_ENV === "test";
+  },
+
+  getPoolConfig() {
+    return createConnectionPoolConfig();
+  },
+
+  createTestDataSource(): Either<MissingEnvVarError, DataSource> {
+    return createDataSource();
+  },
+};

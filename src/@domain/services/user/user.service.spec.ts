@@ -10,7 +10,10 @@ import {
 } from "../../../shared/errors/user.errors.js";
 import { CreateUserInput, UpdateUserInput } from "../../types/user-inputs.js";
 import { UserRole } from "../../entities/user.entity.js";
-import { AppDataSource } from "../../../@infrastructure/database/data-source.js";
+import {
+  AppDataSource,
+  DatabaseUtils,
+} from "../../../@infrastructure/database/data-source.js";
 import { QueryRunner } from "typeorm";
 
 describe("UserService", () => {
@@ -20,14 +23,15 @@ describe("UserService", () => {
   before(async () => {
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
+
+      if (DatabaseUtils.isTestEnvironment()) {
+        console.log("🧪 Test environment detected");
+        console.log("📊 Pool config:", DatabaseUtils.getPoolConfig());
+      }
     }
   });
 
   beforeEach(async () => {
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
-
     queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -37,7 +41,9 @@ describe("UserService", () => {
   });
 
   afterEach(async () => {
-    await queryRunner.rollbackTransaction();
+    if (queryRunner.isTransactionActive) {
+      await queryRunner.rollbackTransaction();
+    }
     await queryRunner.release();
   });
 
@@ -63,6 +69,7 @@ describe("UserService", () => {
       assert.strictEqual(result.value.name, "Acauhi");
       assert.strictEqual(result.value.email.toString(), "acauhi@example.com");
       assert.strictEqual(result.value.role, UserRole.STUDENT);
+      assert.strictEqual(result.value.isVerified, false);
     });
 
     it("should create a teacher user successfully", async () => {
@@ -107,7 +114,11 @@ describe("UserService", () => {
         role: UserRole.STUDENT,
       };
 
-      await userService.createUser(userData);
+      const firstResult = await userService.createUser(userData);
+      assert.ok(
+        firstResult.isRight(),
+        "First user should be created successfully"
+      );
 
       const duplicateUserData: CreateUserInput = {
         name: "Second User",
@@ -190,7 +201,8 @@ describe("UserService", () => {
         role: UserRole.ADMIN,
       };
 
-      await userService.createUser(userData);
+      const createResult = await userService.createUser(userData);
+      assert.ok(createResult.isRight());
 
       const result = await userService.findByEmail("email@example.com");
 
@@ -239,7 +251,8 @@ describe("UserService", () => {
       ];
 
       for (const userData of users) {
-        await userService.createUser(userData);
+        const result = await userService.createUser(userData);
+        assert.ok(result.isRight(), `Failed to create user: ${userData.name}`);
       }
 
       const result = await userService.findAll(1, 2);
@@ -327,7 +340,8 @@ describe("UserService", () => {
         password: "ValidPass123!",
         role: UserRole.TEACHER,
       };
-      await userService.createUser(user1Data);
+      const user1Result = await userService.createUser(user1Data);
+      assert.ok(user1Result.isRight());
 
       const user2Data: CreateUserInput = {
         name: "User 2",
