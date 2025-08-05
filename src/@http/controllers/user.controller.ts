@@ -11,6 +11,7 @@ import {
   CreateUserInput,
   UpdateUserInput,
 } from "../../@domain/types/user-inputs.js";
+import { handleHttpError } from "../../shared/errors/handle-http.errors.js";
 
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -42,7 +43,7 @@ export class UserController {
     const result = await this.userService.createUser(userData);
 
     if (result.isLeft()) {
-      return this.handleError(res, result.value);
+      return handleHttpError(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -61,7 +62,7 @@ export class UserController {
     const result = await this.userService.findById(id);
 
     if (result.isLeft()) {
-      return this.handleError(res, result.value);
+      return handleHttpError(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -104,7 +105,7 @@ export class UserController {
     const result = await this.userService.updateUser(id, userData);
 
     if (result.isLeft()) {
-      return this.handleError(res, result.value);
+      return handleHttpError(res, result.value);
     }
 
     const userResponse = plainToInstance(UserResponseDto, result.value, {
@@ -123,7 +124,7 @@ export class UserController {
     const result = await this.userService.deleteUser(id);
 
     if (result.isLeft()) {
-      return this.handleError(res, result.value);
+      return handleHttpError(res, result.value);
     }
 
     return res.status(204).send();
@@ -145,26 +146,6 @@ export class UserController {
       total,
       page,
       limit,
-    });
-  }
-
-  private handleError(res: Response, error: Error): Response {
-    const errorMap: Record<string, { status: number; message: string }> = {
-      UserNotFoundError: { status: 404, message: error.message },
-      EmailAlreadyInUseError: { status: 409, message: error.message },
-      InvalidEmailError: { status: 400, message: error.message },
-      InvalidPasswordError: { status: 400, message: error.message },
-      ValidationError: { status: 400, message: error.message },
-    };
-
-    const errorConfig = errorMap[error.constructor.name] || {
-      status: 500,
-      message: "Internal server error",
-    };
-
-    return res.status(errorConfig.status).json({
-      status: "error",
-      message: errorConfig.message,
     });
   }
 }
