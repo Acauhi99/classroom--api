@@ -9,10 +9,16 @@ export class UserRepository {
   }
 
   async findById(id: string): Promise<User | null> {
+    if (!id) {
+      return null;
+    }
     return this.repository.findOneBy({ id });
   }
 
   async findByEmail(email: string): Promise<User | null> {
+    if (!email) {
+      return null;
+    }
     return this.repository.findOneBy({
       email: email.toLowerCase(),
     });
@@ -22,9 +28,19 @@ export class UserRepository {
     page = 1,
     limit = 10
   ): Promise<{ users: User[]; total: number }> {
+    const normalizedPage = Math.max(1, page || 1);
+    const normalizedLimit = limit ?? 10;
+
+    if (normalizedLimit === 0) {
+      const total = await this.repository.count();
+      return { users: [], total };
+    }
+
+    const skip = (normalizedPage - 1) * Math.max(0, normalizedLimit);
+
     const [users, total] = await this.repository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: Math.max(0, skip),
+      take: Math.max(1, normalizedLimit),
     });
 
     return { users, total };
@@ -39,6 +55,9 @@ export class UserRepository {
   }
 
   async delete(id: string): Promise<void> {
+    if (!id) {
+      return;
+    }
     await this.repository.delete(id);
   }
 }

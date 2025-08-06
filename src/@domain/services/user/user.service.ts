@@ -69,7 +69,7 @@ export class UserService {
       return left(new UserNotFoundError());
     }
 
-    if (userData.email && userData.email !== user.email.toString()) {
+    if (userData?.email && userData.email !== user.email.toString()) {
       const emailUniquenessCheck = await this.checkEmailUniqueness(
         userData.email,
         id
